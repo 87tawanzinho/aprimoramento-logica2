@@ -1,7 +1,7 @@
 "use client";
 import Image from "next/image";
 import styles from "./page.module.css";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 type Clients = {
   clientX?: number;
@@ -9,26 +9,34 @@ type Clients = {
 };
 export default function Home() {
   const [list, setList] = useState<Clients[]>([]);
-  const [undo, setUndo] = useState<number[]>([]);
+
   const handleClick = (event: React.MouseEvent) => {
-    const newCircle = {
+    const newDot = {
       clientX: event.clientX,
       clientY: event.clientY,
     };
-
-    setList((prev) => [...prev, newCircle]);
-
-    console.log(list);
+    setList((prev) => [...prev, newDot]);
+    localStorage.setItem("list", JSON.stringify(list));
   };
 
-  const deleteDot = (event: MouseEvent) => {
+  useEffect(() => {
+    const data = localStorage.getItem("list");
+    if (data) {
+      setList(JSON.parse(data));
+    }
+  }, []);
+
+  const undoClick = (event: React.MouseEvent) => {
     event.stopPropagation();
+
     if (list.length === 0) {
-      return alert("stop");
+      return alert("await");
     }
     setList((prev) => {
-      const newArr = [...prev].slice(0, -1);
-      return newArr;
+      const undoList = [...prev].slice(0, -1);
+      localStorage.removeItem("list");
+      localStorage.setItem("list", JSON.stringify(undoList));
+      return undoList;
     });
   };
   return (
@@ -40,7 +48,7 @@ export default function Home() {
         ></p>
       ))}
 
-      <button onClick={deleteDot}>DELETE</button>
+      <button onClick={undoClick}>del</button>
     </div>
   );
 }
